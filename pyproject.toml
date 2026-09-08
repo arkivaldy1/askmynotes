@@ -1,0 +1,25 @@
+[project]
+name = "askmynotes"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "arkivaldy1", email = "arki.valdy1@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "chromadb>=1.5.9",
+    "fastapi>=0.141.1",
+    "ollama>=0.6.2",
+    "pypdf>=6.18.0",
+    "python-multipart>=0.0.32",
+    "sentence-transformers>=6.0.1",
+    "uvicorn>=0.52.4",
+]
+
+[project.scripts]
+askmynotes = "askmynotes:main"
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"

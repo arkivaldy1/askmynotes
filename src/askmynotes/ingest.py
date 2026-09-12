@@ -1,6 +1,8 @@
 from pathlib import Path
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
+from vector_store import add_chunks, collection_stats
+import chromadb
 
 _embedding_model = None
 
@@ -16,7 +18,7 @@ def load_pdf_file(file_path: Path) -> str:
         text += page.extract_text() + "\n"
     return text
 
-def  load_document(file_path: Path) -> str:
+def load_document(file_path: Path) -> str:
     """Route to the right loader based on the file extension"""
     suffix = file_path.suffix.lower()
     if suffix in [".txt", ".md"]:
@@ -26,7 +28,7 @@ def  load_document(file_path: Path) -> str:
     else:
         raise ValueError(f"Unsupported file type: {suffix}")
 
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
+def chunk_text(text: str, chunk_size: int = 300, overlap: int = 50) -> list[str]:
     """
         Split text into chunks of approximately chunk_size characters, with overlap characters shared between adjecent chunks.
 
@@ -56,6 +58,8 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     return embeddings.tolist()
 
 if __name__ == "__main__":
+    import sys
+    """
     # Step 1: Load
     test_file = Path("data/test.md")
     text = load_document(test_file)
@@ -73,4 +77,26 @@ if __name__ == "__main__":
     for i, (chunk, emb) in enumerate(zip(chunks, embeddings)):
         print(f"\nChunk {i}: {chunk[:80]}...")
         print(f"Embedding preview: [{emb[0]:.3f}, {emb[1]:.3f}, {emb[2]:.3f}, ...]")
+    """
 
+    # Optional: clear the collection first
+    if "--reset" in sys.argv:
+        client = chromadb.PersistentClient(path=str(Path("chroma_db")))
+        client.delete_collection("notes")
+        print("Cleared existing collection")
+    
+
+    data_dir = Path("data")
+
+    for filepath in data_dir.iterdir():
+        if filepath.suffix.lower() not in [".md", ".txt", ".pdf"]:
+            continue
+
+        print(f"\nProcessing {filepath.name}...")
+        text = load_document(filepath)
+        chunks = chunk_text(text)
+        embeddings = embed_texts(chunks)
+        add_chunks(chunks, embeddings, source_file=filepath.name)
+        print(f"    Ingest {len(chunks)} chunks")
+
+    print(f"\nFinal state: {collection_stats()}")

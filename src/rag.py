@@ -34,7 +34,7 @@ Question: {question}
 
 Answer:"""
 
-def rag_query(quesiton: str, top_k: int = 3, model: str = "llama3.2") -> str:
+def rag_query(question: str, top_k: int = 3, model: str = "llama3.2") -> str:
     """
     Full RAG pipeline: retrieve relevant chunks, then generate a grounded answer.
 
@@ -43,7 +43,7 @@ def rag_query(quesiton: str, top_k: int = 3, model: str = "llama3.2") -> str:
     """
 
     #Step 1: Retrieve
-    chunks = retrieve(quesiton, top_k=top_k)
+    chunks = retrieve(question, top_k=top_k)
 
     if not chunks:
         return {
@@ -54,7 +54,7 @@ def rag_query(quesiton: str, top_k: int = 3, model: str = "llama3.2") -> str:
         }
 
     #Step 2: Build prompt
-    user_prompt = build_prompt(quesiton, chunks)
+    user_prompt = build_prompt(question, chunks)
 
     #Step 3: generate
     answer = ask_llm(

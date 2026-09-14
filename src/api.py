@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from pydantic import BaseModel, Field
 from pathlib import Path
@@ -28,6 +29,14 @@ app = FastAPI(
     description="RAG-powered Q&A over our personal notes",
     version="0.1.0",
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # for local dev only — restrict in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -121,3 +130,5 @@ async def ingest(file: UploadFile = File(...)):
 def stats():
     """Get vector store statistics."""
     return collection_stats()
+
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

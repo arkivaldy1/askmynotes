@@ -22,17 +22,8 @@ engineering, API design — is written from primitives rather than pulled from
 a high-level framework.
 
 ## Architecture
-┌──────────┐    ┌─────────┐    ┌──────────┐    ┌──────────┐
-│ Frontend │───►│ FastAPI │───►│ RAG      │───►│ Ollama   │
-│ (HTML)   │◄───│ API     │◄───│ Pipeline │◄───│ (Llama)  │
-└──────────┘    └─────────┘    └──────────┘    └──────────┘
-│
-▼
-┌────────────┐
-│ ChromaDB   │
-│ (vectors)  │
-└────────────┘
 
+![Architecture](docs/Architecture.png)
 
 **Ingestion path:** documents are loaded, split into overlapping chunks,
 embedded using sentence-transformers, and stored in ChromaDB with source

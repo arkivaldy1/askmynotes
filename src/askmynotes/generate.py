@@ -1,4 +1,9 @@
 import ollama
+import os
+
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+client = ollama.Client(host=OLLAMA_HOST)
+
 
 def ask_llm(
         prompt: str, 
@@ -20,7 +25,7 @@ def ask_llm(
         messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": prompt})
 
-    response = ollama.chat(
+    response = client.chat(
         model=model,
         messages=messages,
         options={"temperature": temperature},

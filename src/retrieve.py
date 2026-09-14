@@ -1,12 +1,15 @@
 from askmynotes.ingest import embed_texts
 from vector_store import get_collection
 
-def retrieve(query: str, top_k: int = 5) -> list[dict]:
+def retrieve(
+        query: str, 
+        top_k: int = 5,
+        max_distance: float = 1.5) -> list[dict]:
     """
-    Find the top_k most relevant chunks for a query.
+    Find the top_k most relevant chunks for a query, filtered by distance.
 
-    Returns a list of dicts with the chunk text, source metadata,
-    and distance score (lower = more similar for cosine distance).
+    max_distance sets a quality floor: chunks farther than this are excluded.
+    For cosine distance, 1.5 is generous; tune based on your data.
     """
 
     # Embed the query using the same model that embedded the chunks
@@ -18,7 +21,7 @@ def retrieve(query: str, top_k: int = 5) -> list[dict]:
         n_results=top_k,
     )
 
-    return [
+    all_results = [
         {
             "text": doc,
             "source": meta["source"],
@@ -33,15 +36,16 @@ def retrieve(query: str, top_k: int = 5) -> list[dict]:
         )
     ]
 
-if __name__ == "__main__":
-    question = "What is RAG?"
-    print(f"Query: {question}\n")
-    results = retrieve(question, top_k=3)
+    # Filter out chunks that are too far semantically
+    return [r for r in all_results if r["distance"] <= max_distance]
 
-    for i, result in enumerate(results, 1):
-        print(f"--- Result {i} (distance {result['distance']:.3f}) ---")
-        print(f"Source: {result['source']} (chunk {result['chunk_index']})")
-        print(f"Text: {result['text'][:200]}...")
-        print()
+
+if __name__ == "__main__":
+    question = "what colour is the sky?"
+    results = retrieve(question, top_k=3)
+    print(f"Query: {question}\n")
+    print(f"Returned {len(results)} chunks after filtering\n")
+    for r in results:
+        print(f" distance {r['distance']:.3f}: {r['text'][:80]}...")
 
 
